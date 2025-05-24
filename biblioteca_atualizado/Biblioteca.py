@@ -1,3 +1,149 @@
+#Codigo, atualizado e funcionando.
+
+import Livro
+import Usuario
+from Devolucao import Devolucao 
+from collections import deque
+
+class Biblioteca:
+    def __init__(self):
+        self.livros = [] 
+        self.usuarios = [] 
+        self.historico_emprestimos = []  
+        self.livros_emprestados = set() 
+
+    def cadastrar_livro(self, titulo, autor, isbn, faixa_etaria, quantidade, data):
+        print("\n--- Cadastro de Livro ---")
+        try:
+            livro = Livro.Livro(titulo, autor, isbn, faixa_etaria, quantidade, data)
+            self.livros.append(livro)
+            print(f"Livro '{titulo}' cadastrado com sucesso!")
+        except ValueError as e:
+            print(f"Erro: {e}")
+
+    def cadastrar_usuario(self, nome, idade, documento, telefone):
+        print("\n--- Cadastro de Usuário ---")
+        usuario = Usuario.Usuario(nome, idade, documento, telefone)
+        self.usuarios.append(usuario)
+        print(f"Usuário '{nome}' cadastrado com sucesso!")
+    
+    def emprestar_livro(self, nome_usuario, titulo_livro):
+        print("\n--- Empréstimo de Livro ---")
+        usuario_encontrado = self.buscar_usuario_por_nome(nome_usuario)
+        livro_encontrado = self.buscar_livro_por_titulo(titulo_livro)
+
+        if usuario_encontrado and livro_encontrado:
+            if livro_encontrado.disponivel and livro_encontrado.quantidade > 0:
+                livro_encontrado.quantidade -= 1
+                if livro_encontrado.quantidade == 0:
+                    livro_encontrado.disponivel = False
+                self.livros_emprestados.add(livro_encontrado.isbn)  #Aqui ele armazena ISBN no SET
+                self.historico_emprestimos.append({
+                    "acao": "empréstimo",
+                    "livro": titulo_livro,
+                    "usuario": nome_usuario
+                })
+                print(f"Livro '{titulo_livro}' emprestado para {nome_usuario}!")
+            else:
+                print("Livro indisponível.")
+        else:
+            print("Usuário ou livro não encontrado.")
+             
+    def mostrar_historico(self):
+        print("\n--- Histórico de Empréstimos ---")
+        for registro in self.historico_emprestimos:
+            print(f"{registro['acao'].upper()}: {registro['livro']} está com -> {registro['usuario']}")    
+
+    def buscar_livro_por_titulo(self, titulo):
+        for livro in self.livros:
+            if livro.titulo.lower().strip() == titulo.lower().strip():
+                return livro
+        return None
+
+    def buscar_usuario_por_nome(self, nome):
+        for usuario in self.usuarios:
+            if usuario.nome.lower().strip() == nome.lower().strip():
+                return usuario
+        return None
+
+def main():
+    biblioteca = Biblioteca()
+    devolucao = Devolucao(biblioteca)  
+    while True:
+        print("\n--- MENU PRINCIPAL ---")
+        print("1. Cadastrar Livro")
+        print("2. Cadastrar Usuário")
+        print("3. Emprestar Livro")
+        print("4. Ver Histórico")
+        print("5. Devolver Livro")
+        print("6. Buscar Livro")
+        print("7. Buscar Usuário")
+        print("8. Sair")        
+        opcao = input("Escolha uma opção: ").strip()
+
+# Aqui o usuario pode escolher o que ele vai querer fazer em nossa biblioteca      
+        if opcao == "1":
+            titulo = input("Digite o título do Livro: ")
+            autor = input("Digite o nome do autor: ")
+            isbn = input("Digite o ISBN (APENAS 13 dígitos): ")
+            faixa_etaria = input("Digite a faixa etária da categoria do livro: ")
+            try:
+                quantidade = int(input("Digite a quantidade de exemplares: "))
+            except ValueError:
+                print("Quantidade inválida! Deve ser um número inteiro.")
+                continue
+            data = input("Digite a data DD/MM/AAAA: ")
+            biblioteca.cadastrar_livro(titulo, autor, isbn, faixa_etaria, quantidade, data)
+        
+        elif opcao == "2":
+            nome = input("Digite seu nome: ")
+            idade = input("Digite sua idade: ")
+            documento = input("Digite seu CPF: ")
+            telefone = input("Digite seu número com DDD: ")
+            biblioteca.cadastrar_usuario(nome, idade, documento, telefone)
+        
+        elif opcao == "3":
+            nome_usuario = input("Nome do usuário: ").strip()
+            titulo_livro = input("Título do livro: ").strip()
+            biblioteca.emprestar_livro(nome_usuario, titulo_livro)
+        
+        elif opcao == "4":
+            biblioteca.mostrar_historico()
+        
+        elif opcao == "5":
+            devolucao.devolver_livro()
+       
+        elif opcao == "6":
+            titulo_livro = input("Digite o título do livro a buscar: ").strip()
+            livro = biblioteca.buscar_livro_por_titulo(titulo_livro)
+            if livro:
+                print("\n--- Livro Encontrado ---")
+                print(livro)
+            else:
+                print("Livro não encontrado.")
+        
+        elif opcao == "7":
+            nome_usuario = input("Digite o nome do usuário a buscar: ").strip()
+            usuario = biblioteca.buscar_usuario_por_nome(nome_usuario)
+            if usuario:
+                print("\n--- Usuário Encontrado ---")
+                print(usuario)
+            else:
+                print("Usuário não encontrado.")
+        
+        elif opcao == "8":
+            print("Saindo do sistema...")
+            break        
+        else:
+            print("Opção inválida. Tente novamente.")
+            
+if __name__ == "__main__":
+    main()
+
+
+
+#vou deixar esta verção aqui em baixo caso precisem
+
 import Livro
 import Usuario
 from Devolucao import Devolucao
@@ -135,3 +281,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
